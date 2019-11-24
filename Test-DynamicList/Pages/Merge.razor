@@ -1,0 +1,94 @@
+﻿@page "/merge"
+
+@using Test_DynamicList.Data
+
+
+<div class="text-center m-5">
+    <h3>Merge Editor</h3>
+    <hr />
+</div>
+
+<div class="row">
+    <h3>Unmerged Data</h3>
+</div>
+<div class="row mt-5 mb-5">
+    <div class="col-12">
+        <ul class="list-group shadow bg-white rounded">
+            <li class="list-group-item pageItem-bg-color">
+                <div class="row">
+                    <div class="col-1">
+                    </div>
+                    <div class="col-2 text-center pr-2">
+                        <h5>Release</h5>
+                    </div>
+                    <div class="col-1 text-center">
+                    </div>
+                    <div class="col-3">
+                        <h5>Data</h5>
+                    </div>
+                    <div class="col-1">
+                        <h5>HasEdit</h5>
+                    </div>
+                    <div class="col-1">
+                        <h5>Action</h5>
+                    </div>
+                    <div class="col-3">
+                        <div class="row">
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            @foreach (var item in PageItems)
+            {
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-1">
+                        </div>
+                        <div class="col-2 text-center">
+                            @item.Release
+                        </div>
+                        <div class="col-1 text-center">
+                            @item.LineOrder
+                        </div>
+                        <div class="col-3">
+                            @item.Data
+                        </div>
+                        <div class="col-1">
+                            @item.HasEdit.ToString()
+                        </div>
+                        <div class="col-1">
+                            @item.Action
+                        </div>
+                        <div class="col-3">
+                            <div class="row">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
+    
+</div>
+<div>
+    <MergeList PageItems="@PageItems" />
+</div>
+
+
+
+@code {
+
+    [CascadingParameter]
+    private StateComponent State { get; set; }
+
+    private List<PageItem> PageItems = new List<PageItem>();
+
+    protected override void OnInitialized()
+    {
+        PageItems = State.GetPageItems();
+    }
+
+}

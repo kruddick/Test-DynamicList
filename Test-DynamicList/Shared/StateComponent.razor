@@ -1,0 +1,153 @@
+﻿@using Test_DynamicList.Data
+
+@if (hasLoaded)
+{
+    <CascadingValue Value="@this">
+        @ChildContent
+    </CascadingValue>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+
+@code {
+
+    public List<string> Pages = new List<string>() { "Account", "Benefits", "Online Access", "Features" };
+    List<string> Custodians = new List<string>() { "AssetMark", "TDA", "Pershing", "Schwab" };
+    public List<string> Releases = new List<string>() { "R20191212" };
+
+    List<PageItem> PageItems = new List<PageItem>()
+        {
+            new PageItem()
+            {
+                LineOrder = 0,
+                Data = "This is line 1",
+                HasEdit = false
+            },
+            new PageItem()
+            {
+                LineOrder = 1,
+                Data = "This is line 2",
+                HasEdit = false
+            },
+            new PageItem()
+            {
+                LineOrder = 2,
+                Data = "This is line 3",
+                HasEdit = false
+            },
+            new PageItem()
+            {
+                LineOrder = 3,
+                Data = "This is line 4",
+                HasEdit = false
+            }
+        };
+
+    public PageSelection PageSelection { get; set; } = new PageSelection();
+
+    private bool hasLoaded;
+
+
+
+    Stack<List<PageItem>> Undo = new Stack<List<PageItem>>();
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        hasLoaded = true;
+    }
+
+    public void SaveChangesAsync()
+    {
+
+    }
+
+    #region Custodians
+
+    public List<string> GetCustodians()
+    {
+        return Custodians;
+    }
+
+    #endregion
+
+
+    #region PageItems
+
+    public List<PageItem> GetPageItems()
+    {
+        return PageItems.OrderBy(x => x.LineOrder).ToList();
+    }
+
+    public List<PageItem> AddAction(int position, string action, string release)
+    {
+        Undo.Push((List<PageItem>)Extensions.DeepClone(PageItems));
+
+        var itemsAfterPosition = PageItems.Where(x => x.LineOrder > position).OrderBy( x => x.LineOrder).ToList();
+
+        foreach (var lineItem in itemsAfterPosition)
+        {
+            lineItem.LineOrder += 1;
+        }
+
+        var newItem = new PageItem()
+        {
+            LineOrder = position + 1,
+            Data = "new",
+            Action = action,
+            Release = release
+        };
+
+        PageItems.Add(newItem);
+
+        var modifyLine = PageItems.Where(x => x.LineOrder == position).FirstOrDefault();
+        modifyLine.HasEdit = true;
+
+        return PageItems.OrderBy(x => x.LineOrder).ToList();
+    }
+
+    public List<PageItem> RemoveAction(int lineId)
+    {
+        var removeLine = PageItems.Where(x => x.LineOrder == lineId).FirstOrDefault();
+        PageItems.Remove(removeLine);
+
+        var patchLine = PageItems.Where(x => x.LineOrder == lineId - 1).FirstOrDefault();
+        patchLine.HasEdit = false;
+
+        int i = 0;
+        foreach(var item in PageItems.OrderBy(x=>x.LineOrder))
+        {
+            item.LineOrder = i;
+            i += 1;
+        }
+
+        return PageItems.OrderBy(x => x.LineOrder).ToList();
+    }
+
+    public List<PageItem> UndoChange()
+    {
+        if (Undo.Count > 0)
+        {
+            PageItems = Undo.Pop();
+        }
+        return PageItems.OrderBy(x => x.LineOrder).ToList();
+    }
+
+    public int GetUndoCount()
+    {
+        return Undo.Count();
+    }
+
+    #endregion
+
+
+
+}

@@ -1,0 +1,32 @@
+﻿@page "/"
+@using Test_DynamicList.Data
+
+<CustodianSelect OnClick="SelectionMade" />
+
+@if (State.PageSelection != null && State.PageSelection.IsLocked == true)
+{
+    <div>
+        <PageEditor PageSelection="@State.PageSelection"/>
+    </div>
+}
+
+@code {
+
+    [CascadingParameter]
+    private StateComponent State { get; set; }
+
+    //PageSelection PageSelection;
+
+    string message = "Hello from ParentComponent";
+
+    void ClickHandler(string newMessage)
+    {
+        message = newMessage;
+    }
+
+    public void SelectionMade(PageSelection pageSelection)
+    {
+        State.PageSelection = pageSelection;
+
+    }
+}

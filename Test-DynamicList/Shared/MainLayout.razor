@@ -1,0 +1,37 @@
+﻿@inherits LayoutComponentBase
+
+@*<div class="sidebar">
+    <NavMenu />
+</div>*@
+
+<div class="main">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm bg-white rounded">
+        <a class="navbar-brand" href="/">Team W.F.I.</a>
+        
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item ml-2 mr-2">
+                    <a class="nav-link" href="/">Edit</a>
+                </li>
+                <li class="nav-item ml-2 mr-2">
+                    <a class="nav-link" href="/merge">Merge</a>
+                </li>
+                <li class="nav-item ml-2 mr-2">
+                    <a class="nav-link" href="/research">Research</a>
+                </li>
+                <li class="nav-item ml-2 mr-2">
+                    <a class="nav-link" href="#">Unlock</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="content px-4">
+        <div class="text-center mb-2">
+
+            <h1>Custodial Interview Page Editor</h1>
+        </div>
+        <hr />
+        @Body
+    </div>
+</div>

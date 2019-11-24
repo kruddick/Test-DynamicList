@@ -1,0 +1,208 @@
+﻿@using Test_DynamicList.Data
+
+<div class="row">
+    <div class="col-3">
+        <div class="card text-center shadow mb-5 bg-white rounded">
+            <div class="card-header">
+                <h3>Custodian</h3>
+            </div>
+            <div class="card-body">
+                @if ( State.PageSelection.Custodian != "")
+                {
+                <div>@State.PageSelection.Custodian</div>
+                }
+                else
+                {
+                    foreach (var custodian in  State.GetCustodians())
+                    {
+                        <div><button class="btn btn-link" @onclick="@(() => SetCustodian(custodian))">@custodian</button></div>
+                    }
+                }
+            </div>
+            <div class="card-footer text-muted">
+                @if (State.PageSelection.Custodian != "" && !State.PageSelection.IsLocked)
+                {
+                    <div>
+                        <button class="btn btn-link" @onclick="@(() => SetCustodian(""))">Change Selection</button>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        @if (State.PageSelection.Custodian != "")
+        {
+            <div class="card text-center shadow mb-5 bg-white rounded">
+                <div class="card-header">
+                    <h3>Release</h3>
+                </div>
+                <div class="card-body">
+                    @if (State.PageSelection.Release != "")
+                    {
+                        <div>@State.PageSelection.Release</div>
+                    }
+                    else
+                    {
+                        foreach (var release in State.Releases)
+                        {
+                            <div><button class="btn btn-link" @onclick="@(() => SetRelease(release))">@release</button></div>
+                        }
+                    }
+                </div>
+                <div class="card-footer text-muted">
+                    @if (!State.PageSelection.IsLocked)
+                    {
+                        @if (State.PageSelection.Release != "")
+                        {
+                            <div>
+                                <button class="btn btn-link" @onclick="@(() => SetRelease(""))">Change Selection</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Release" aria-label="Release" @bind="NewRelease"  />
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-primary" type="button" id="button-addon2" @onclick="@(() => AddRelease())">Add Release</button>
+                                </div>
+                            </div>
+
+                            @*<EditForm Model="@NewRelease" OnValidSubmit="@AddRelease">
+                                <DataAnnotationsValidator />
+                                <ValidationSummary />
+
+                                <InputText id="release" @bind-Value="NewRelease" />
+
+                                <button class="btn btn-outline-primary" type="submit">Submit</button>
+                            </EditForm>*@
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-3">
+        @if (State.PageSelection.Release != "")
+        {
+            <div class="card text-center shadow mb-5 bg-white rounded">
+                <div class="card-header">
+                    <h3>Page</h3>
+                </div>
+                <div class="card-body">
+                    @if (State.PageSelection.Page != "")
+                    {
+                        <div>@State.PageSelection.Page</div>
+                    }
+                    else
+                    {
+                        foreach (var editPage in State.Pages)
+                        {
+                            <div><button class="btn btn-link" @onclick="@(() => SetPage(editPage))">@editPage</button></div>
+                        }
+                    }
+                </div>
+                <div class="card-footer text-muted">
+                    @if (State.PageSelection.Page != "" && !State.PageSelection.IsLocked)
+                    {
+                        <div>
+                            <button class="btn btn-link" @onclick="@(() => SetPage(""))">Change Selection</button>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-3">
+        @if (State.PageSelection.Page != "")
+        {
+            <div class="card text-center shadow mb-5 bg-white rounded">
+                <div class="card-header">
+                    <h3>Lock Page</h3>
+                </div>
+                <div class="card-body">
+                    @if (State.PageSelection.IsLocked)
+                    {
+                        <div>Page Locked</div>
+                    }
+                    else
+                    {
+                        <div>
+                            <button class="btn btn-outline-danger" @onclick="@(() => LockPage())">Lock Page</button>
+                        </div>
+                    }
+                </div>
+                <div class="card-footer text-muted">
+                    @if (State.PageSelection.IsLocked)
+                    {
+                        <div>
+                            <button class="btn btn-outline-success" @onclick="@(() => LockPage())">Save Page</button>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code {
+
+    [CascadingParameter]
+    private StateComponent State { get; set; }
+
+    private string NewRelease { get; set; } = "";
+
+    [Parameter] public EventCallback<PageSelection> OnClick { get; set; }
+
+    public void SetCustodian(string custodian)
+    {
+        if (custodian == "")
+        {
+            State.PageSelection.Release = "";
+            State.PageSelection.Page = "";
+        }
+        State.PageSelection.Custodian = custodian;
+    }
+
+    public void SetRelease(string release)
+    {
+        State.PageSelection.Release = release;
+        if (release == "")
+        {
+            State.PageSelection.Page = "";
+        }
+    }
+
+    public void SetPage(string page)
+    {
+        State.PageSelection.Page = page;
+    }
+
+    public void AddRelease()
+    {
+        if (NewRelease != "")
+        {
+            State.Releases.Add(NewRelease);
+            NewRelease = "";
+            //StateHasChanged();
+        }
+    }
+
+    public void LockPage()
+    {
+        State.PageSelection.IsLocked = !State.PageSelection.IsLocked;
+        OnClick.InvokeAsync(State.PageSelection);
+
+        //if (State.PageSelection.IsLocked)
+        //{
+        //    OnClick.InvokeAsync(State.PageSelection);
+        //}
+        //else
+        //{
+        //    OnClick.InvokeAsync(null);
+        //}
+    }
+}

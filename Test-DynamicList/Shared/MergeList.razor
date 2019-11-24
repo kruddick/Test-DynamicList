@@ -1,0 +1,170 @@
+﻿@using Test_DynamicList.Data
+
+<h3 class="mt-2">Merged</h3>
+
+<div class="mb-5 d-flex justify-content-center">
+    @foreach (var release in State.Releases)
+    {
+        <div class="p-2">
+            <button class="btn btn-outline-primary btn-sm" @onclick="@(() => SelectRelease(release))">@release</button>
+        </div>
+    }
+</div>
+<div>
+    @if (CanExport)
+    {
+        <div>
+            Data merged down to @Release
+        </div>
+    }
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <ul class="list-group shadow bg-white rounded">
+            <li class="list-group-item pageItem-bg-color">
+                <div class="row">
+                    <div class="col-1">
+                    </div>
+                    <div class="col-2 text-center pr-2">
+                        <h5>Release</h5>
+                    </div>
+                    <div class="col-1 text-center">
+                    </div>
+                    <div class="col-3">
+                        <h5>Data</h5>
+                    </div>
+                    <div class="col-1">
+                        <h5>HasEdit</h5>
+                    </div>
+                    <div class="col-1">
+                        <h5>Action</h5>
+                    </div>
+                    <div class="col-3">
+                        <div class="row">
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            @foreach (var item in PageItems)
+            {
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-1">
+                        </div>
+                        <div class="col-2 text-center">
+                            @item.Release
+                        </div>
+                        <div class="col-1 text-center">
+                            @item.LineOrder
+                        </div>
+                        <div class="col-3">
+                            @item.Data
+                        </div>
+                        <div class="col-1">
+                            @item.HasEdit.ToString()
+                        </div>
+                        <div class="col-1">
+                            @item.Action
+                        </div>
+                        <div class="col-3">
+                            <div class="row">
+
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+    <div>
+        @if (CanExport)
+        {
+            <div class="p-2">
+                <button class="btn btn-outline-primary btn-sm")">Export</button>
+            </div>
+        }
+    </div>
+</div>
+
+
+
+
+@code {
+
+        [CascadingParameter]
+        private StateComponent State { get; set; }
+
+        [Parameter]
+        public List<PageItem> PageItems { get; set; } = new List<PageItem>();
+
+        private string Release { get; set; } = "";
+
+        private bool CanExport {get; set;} = false;
+
+    public void SelectRelease(string release)
+    {
+        Release = release;
+
+        var pageItems = (List<PageItem>)Extensions.DeepClone(State.GetPageItems());
+
+        var mergeItems = new List<PageItem>();
+
+        for (int i = 0; i < pageItems.Count; i++)
+        {
+            var pageItem = pageItems[i];
+            if (pageItem.Release == null || pageItem.Release == "")
+            {
+                if (pageItem.HasEdit == true)
+                {
+                    if (pageItems[i + 1].Release == release)
+                    {
+                        pageItem.HasEdit = false;
+                        if (pageItems[i + 1].Action == "create")
+                        {
+                            mergeItems.Add(pageItem);
+                        }
+                    }
+                    else
+                    {
+                        mergeItems.Add(pageItem);
+                    }
+                }
+                else
+                {
+                    mergeItems.Add(pageItem);
+                }
+            }
+            else if (pageItem.Release.CompareTo(release) <= 0)
+            {
+                if (pageItem.Action == "update")
+                {
+                    pageItem.Action = "";
+                    pageItem.Release = "";
+                    mergeItems.Add(pageItem);
+                }
+                else if (pageItem.Action == "delete")
+                {
+
+                }
+                else
+                {
+                    // must be create
+                    pageItem.Action = "";
+                    pageItem.Release = "";
+                    mergeItems.Add(pageItem);
+                }
+            }
+            else
+            {
+                // must be a newer release
+                mergeItems.Add(pageItem);
+            }
+        }
+
+        PageItems = mergeItems;
+        CanExport = true;
+    }
+
+}
